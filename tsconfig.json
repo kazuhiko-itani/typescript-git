@@ -4,7 +4,8 @@
     "module": "commonjs" /* Specify what module code is generated. */,
     "forceConsistentCasingInFileNames": true /* Ensure that casing is correct in imports. */,
     /* Type Checking */
-    "strict": true /* Enable all strict type-checking options. */
+    "strict": true /* Enable all strict type-checking options. */,
+    "esModuleInterop": true
   },
   "exclude": ["node_modules"]
 }
