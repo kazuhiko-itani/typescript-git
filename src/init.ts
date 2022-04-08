@@ -1,28 +1,28 @@
 import ConfigParser from "configparser";
-import fs from "fs";
-import path from "path";
+import { existsSync, mkdirSync, writeFileSync } from "fs";
+import { join } from "path";
 import { getGitPath } from "./helpers";
 
 export const init = (): void => {
   const gitPath = getGitPath();
-  if (fs.existsSync(gitPath)) {
+  if (existsSync(gitPath)) {
     throw Error(`${gitPath} is already exist`);
   }
 
-  fs.mkdirSync(gitPath);
+  mkdirSync(gitPath);
 
-  fs.mkdirSync(path.join(gitPath, "branches"));
-  fs.mkdirSync(path.join(gitPath, "objects"));
-  fs.mkdirSync(path.join(gitPath, "refs", "tags"), { recursive: true });
-  fs.mkdirSync(path.join(gitPath, "refs", "heads"), { recursive: true });
+  mkdirSync(join(gitPath, "branches"));
+  mkdirSync(join(gitPath, "objects"));
+  mkdirSync(join(gitPath, "refs", "tags"), { recursive: true });
+  mkdirSync(join(gitPath, "refs", "heads"), { recursive: true });
 
   // .git/description
   const description =
     "Unnamed repository; edit this file 'description' to name the repository.\n";
-  fs.writeFileSync(path.join(gitPath, "description"), description);
+  writeFileSync(join(gitPath, "description"), description);
 
   // .git/HEAD
-  fs.writeFileSync(path.join(gitPath, "HEAD"), "ref: refs/heads/master\n");
+  writeFileSync(join(gitPath, "HEAD"), "ref: refs/heads/master\n");
 
   // .git/config
   const config = new ConfigParser();
@@ -31,8 +31,8 @@ export const init = (): void => {
   config.set("core", "filemode", true);
   config.set("core", "filemode", true);
   config.set("core", "precomposeunicode", true);
-  fs.writeFileSync(path.join(gitPath, "config"), "");
-  config.write(path.join(gitPath, "config"));
+  writeFileSync(join(gitPath, "config"), "");
+  config.write(join(gitPath, "config"));
 
   console.log("Create .tgit dir!");
 };

@@ -1,8 +1,8 @@
-import path from "path";
+import { resolve } from "path";
 import { getGitPath, getRepoPath } from "../src/helpers";
 
 test("should return the directory where git is located", () => {
-  const expectPath = path.resolve(__dirname, "..");
+  const expectPath = resolve(__dirname, "..");
 
   expect(getRepoPath()).toBe(expectPath);
 });
@@ -13,7 +13,7 @@ test("should return .tgit dir path", () => {
     throw Error("GIT_DIR_NAME env must set");
   }
 
-  const expectPath = path.resolve(__dirname, "..", gitDirName);
+  const expectPath = resolve(__dirname, "..", gitDirName);
 
   expect(getGitPath()).toBe(expectPath);
 });
