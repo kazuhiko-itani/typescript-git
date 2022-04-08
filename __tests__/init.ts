@@ -1,7 +1,10 @@
-import fs from "fs";
-import path from "path";
+import { existsSync, mkdirSync } from "fs";
+import { join } from "path";
 import { init } from "../src/init";
-import { deleteTestGitDir, getTestGitDirPath } from "./test_helpers/helpers";
+import {
+  deleteTestGitDir,
+  getTestGitDirPath,
+} from "./test_helpers/setupGitDir";
 
 afterEach(() => {
   deleteTestGitDir();
@@ -12,20 +15,20 @@ test("should create new git dir", () => {
 
   init();
 
-  expect(fs.existsSync(path.join(gitPath, "branches"))).toBe(true);
-  expect(fs.existsSync(path.join(gitPath, "objects"))).toBe(true);
-  expect(fs.existsSync(path.join(gitPath, "refs", "tags"))).toBe(true);
-  expect(fs.existsSync(path.join(gitPath, "refs", "heads"))).toBe(true);
+  expect(existsSync(join(gitPath, "branches"))).toBe(true);
+  expect(existsSync(join(gitPath, "objects"))).toBe(true);
+  expect(existsSync(join(gitPath, "refs", "tags"))).toBe(true);
+  expect(existsSync(join(gitPath, "refs", "heads"))).toBe(true);
 
-  expect(fs.existsSync(path.join(gitPath, "description"))).toBe(true);
-  expect(fs.existsSync(path.join(gitPath, "HEAD"))).toBe(true);
-  expect(fs.existsSync(path.join(gitPath, "config"))).toBe(true);
+  expect(existsSync(join(gitPath, "description"))).toBe(true);
+  expect(existsSync(join(gitPath, "HEAD"))).toBe(true);
+  expect(existsSync(join(gitPath, "config"))).toBe(true);
 });
 
 test("should raise error when git directory is already exists", () => {
   const gitPath = getTestGitDirPath();
 
-  fs.mkdirSync(gitPath);
+  mkdirSync(gitPath);
 
   expect(() => {
     init();

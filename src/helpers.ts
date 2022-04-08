@@ -1,14 +1,14 @@
-import fs from "fs";
-import path from "path";
+import { existsSync } from "fs";
+import { join, resolve } from "path";
 
 export const getRepoPath = (currentPath = "."): string => {
-  const realPath = path.resolve(currentPath);
+  const realPath = resolve(currentPath);
 
-  if (fs.existsSync(path.join(realPath, ".git"))) {
+  if (existsSync(join(realPath, ".git"))) {
     return realPath;
   }
 
-  const parent = path.resolve(realPath, "..");
+  const parent = resolve(realPath, "..");
   if (parent == currentPath) {
     throw Error("No git repo directory");
   }
@@ -23,5 +23,5 @@ export const getGitPath = (): string => {
     throw Error("GIT_DIR_NAME env is must set");
   }
 
-  return path.join(repoPath, gitDirName);
+  return join(repoPath, gitDirName);
 };
