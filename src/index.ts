@@ -2,6 +2,7 @@ import { Command } from "commander";
 import dotenv from "dotenv";
 import type { CatFileOption } from "./catFile";
 import { catFile } from "./catFile";
+import { hashObject } from "./hashObject";
 import { init } from "./init";
 
 type ShowTypeOption = {
@@ -34,6 +35,13 @@ program
     }
 
     catFile(hash, Object.keys(options)[0] as CatFileOption);
+  });
+
+program
+  .command("hash-object")
+  .argument("<filePath>")
+  .action((filePath) => {
+    hashObject(filePath);
   });
 
 program.parse();
