@@ -1,65 +1,72 @@
 import { existsSync, readFileSync } from "fs";
-import { join } from "path";
-import { unzip } from "zlib";
-import { getGitPath } from "./helpers";
+import { parseGitObject } from "./helpers/parseGitObject";
+import { getGitObjectPath } from "./helpers/pathHelpers";
 
+/*
 type CommitLogKey = "tree" | "parent" | "author" | "committer" | "gpgsig";
 // commit message is less key
 type CommitLogDictKey = CommitLogKey | "";
+*/
+
+const commitHashes: string[] = [];
+const seen: Set<string> = new Set();
 
 export const log = (hash: string): void => {
-  displayLog(hash);
+  commitHashes.push(hash);
+  displayLog();
 };
 
-const displayLog = (hash: string, seen: Set<string> = new Set()) => {
-  const dirName = hash.slice(0, 2);
-  const fileName = hash.slice(2);
+const displayLog = async () => {
+  const hash = commitHashes.shift();
+  if (!hash) {
+    return;
+  }
 
-  const absolutePath = join(getGitPath(), "objects", dirName, fileName);
-  if (!existsSync(absolutePath)) {
+  const gitObjectPath = getGitObjectPath(hash);
+  if (!existsSync(gitObjectPath)) {
     throw Error(`${hash} is not exist.`);
   }
 
-  const fileContent = readFileSync(absolutePath);
+  const fileContent = readFileSync(gitObjectPath);
+  const gitObjectInfo = await parseGitObject(fileContent);
+  if (gitObjectInfo.type !== "commit") {
+    throw new Error(`${hash} is not commit object`);
+  }
 
-  unzip(fileContent, (_, buf) => {
-    // object type
-    const spaceIndex = buf.indexOf(" ");
-    const typeBinary = buf.slice(0, spaceIndex);
-    const type = new TextDecoder().decode(typeBinary);
-    if (type !== "commit") {
-      throw new Error(`${hash} is not commit object`);
-    }
+  const commitLog = new TextDecoder().decode(gitObjectInfo.contentBinary);
+  console.log(commitLog, "\n");
 
-    const nullIndex = buf.indexOf("\0");
-    // commit info
-    const commitInfoBinary = buf.slice(nullIndex + 1);
-    const content = new TextDecoder().decode(commitInfoBinary);
-
-    const parseResult = parseCommitLog(content, 0, new Map());
-    parseResult.forEach((values, key) => {
-      const valueString = values.reduce((a, b) => {
-        return a + "\n       " + b;
+  const parentCommitHashes = getParentCommitHashes(commitLog);
+  if (parentCommitHashes.length >= 1) {
+    parentCommitHashes
+      .filter((commitHash) => {
+        return !seen.has(commitHash);
+      })
+      .forEach((commitHash) => {
+        commitHashes.push(commitHash);
+        seen.add(commitHash);
       });
+  }
 
-      console.log(key, valueString);
-    });
-
-    console.log("\n");
-
-    const parentHashes = parseResult.get("parent");
-    if (parentHashes) {
-      parentHashes
-        .filter((parentHash) => {
-          return !seen.has(parentHash);
-        })
-        .forEach((parentHash) => {
-          seen.add(parentHash);
-          displayLog(parentHash, seen);
-        });
-    }
-  });
+  displayLog();
 };
+
+const getParentCommitHashes = (commitLog: string): string[] => {
+  const parentCommitHashes = [];
+  let index = commitLog.indexOf("parent ");
+
+  while (index !== -1) {
+    const space = commitLog.indexOf(" ", index);
+    const nlChar = commitLog.indexOf("\n", space);
+    parentCommitHashes.push(commitLog.slice(space + 1, nlChar));
+
+    index = commitLog.indexOf("parent ", nlChar);
+  }
+
+  return parentCommitHashes.reverse();
+};
+
+/*
 
 const parseCommitLog = (
   commitLog: string,
@@ -89,3 +96,5 @@ const parseCommitLog = (
 
   return parseCommitLog(commitLog, start, dict);
 };
+
+*/

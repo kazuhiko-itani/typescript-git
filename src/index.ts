@@ -5,6 +5,7 @@ import { catFile } from "./catFile";
 import { hashObject } from "./hashObject";
 import { init } from "./init";
 import { log } from "./log";
+import { lsTree } from "./lsTree";
 
 type ShowTypeOption = {
   [k in CatFileOption]: boolean;
@@ -50,6 +51,14 @@ program
   .argument("<hash>")
   .action((hash) => {
     log(hash);
+  });
+
+program
+  .command("ls-tree")
+  .option("-r --recursive")
+  .argument("<hash>")
+  .action((hash, options: { recursive: boolean }) => {
+    lsTree(hash, options.recursive);
   });
 
 program.parse();
