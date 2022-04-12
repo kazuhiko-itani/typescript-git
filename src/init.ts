@@ -1,7 +1,7 @@
 import ConfigParser from "configparser";
 import { existsSync, mkdirSync, writeFileSync } from "fs";
 import { join } from "path";
-import { getGitPath } from "./helpers";
+import { getGitPath } from "./helpers/pathHelpers";
 
 export const init = (): void => {
   const gitPath = getGitPath();

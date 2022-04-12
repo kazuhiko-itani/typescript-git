@@ -25,3 +25,10 @@ export const getGitPath = (): string => {
 
   return join(repoPath, gitDirName);
 };
+
+export const getGitObjectPath = (hash: string): string => {
+  const dir = hash.slice(0, 2);
+  const file = hash.slice(2);
+
+  return join(getGitPath(), "objects", dir, file);
+};

@@ -1,7 +1,6 @@
 import { existsSync, readFileSync } from "fs";
-import { join } from "path";
-import { unzip } from "zlib";
-import { getGitPath } from "./helpers";
+import { parseGitObject } from "./helpers/parseGitObject";
+import { getGitObjectPath } from "./helpers/pathHelpers";
 
 /*
 type CommitLogKey = "tree" | "parent" | "author" | "committer" | "gpgsig";
@@ -17,51 +16,39 @@ export const log = (hash: string): void => {
   displayLog();
 };
 
-const displayLog = () => {
+const displayLog = async () => {
   const hash = commitHashes.shift();
   if (!hash) {
     return;
   }
 
-  const dirName = hash.slice(0, 2);
-  const fileName = hash.slice(2);
-
-  const absolutePath = join(getGitPath(), "objects", dirName, fileName);
-  if (!existsSync(absolutePath)) {
+  const gitObjectPath = getGitObjectPath(hash);
+  if (!existsSync(gitObjectPath)) {
     throw Error(`${hash} is not exist.`);
   }
 
-  const fileContent = readFileSync(absolutePath);
+  const fileContent = readFileSync(gitObjectPath);
+  const gitObjectInfo = await parseGitObject(fileContent);
+  if (gitObjectInfo.type !== "commit") {
+    throw new Error(`${hash} is not commit object`);
+  }
 
-  unzip(fileContent, (_, buf) => {
-    // object type
-    const spaceIndex = buf.indexOf(" ");
-    const typeBinary = buf.slice(0, spaceIndex);
-    const type = new TextDecoder().decode(typeBinary);
-    if (type !== "commit") {
-      throw new Error(`${hash} is not commit object`);
-    }
+  const commitLog = new TextDecoder().decode(gitObjectInfo.contentBinary);
+  console.log(commitLog, "\n");
 
-    const nullIndex = buf.indexOf("\0");
-    // commit info
-    const commitInfoBinary = buf.slice(nullIndex + 1);
-    const content = new TextDecoder().decode(commitInfoBinary);
-    console.log(content, "\n");
+  const parentCommitHashes = getParentCommitHashes(commitLog);
+  if (parentCommitHashes.length >= 1) {
+    parentCommitHashes
+      .filter((commitHash) => {
+        return !seen.has(commitHash);
+      })
+      .forEach((commitHash) => {
+        commitHashes.push(commitHash);
+        seen.add(commitHash);
+      });
+  }
 
-    const parentCommitHashes = getParentCommitHashes(content);
-    if (parentCommitHashes.length >= 1) {
-      parentCommitHashes
-        .filter((commitHash) => {
-          return !seen.has(commitHash);
-        })
-        .forEach((commitHash) => {
-          commitHashes.push(commitHash);
-          seen.add(commitHash);
-        });
-    }
-
-    displayLog();
-  });
+  displayLog();
 };
 
 const getParentCommitHashes = (commitLog: string): string[] => {
