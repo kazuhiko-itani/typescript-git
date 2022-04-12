@@ -3,15 +3,26 @@ import { join } from "path";
 import { unzip } from "zlib";
 import { getGitPath } from "./helpers";
 
+/*
 type CommitLogKey = "tree" | "parent" | "author" | "committer" | "gpgsig";
 // commit message is less key
 type CommitLogDictKey = CommitLogKey | "";
+*/
+
+const commitHashes: string[] = [];
+const seen: Set<string> = new Set();
 
 export const log = (hash: string): void => {
-  displayLog(hash);
+  commitHashes.push(hash);
+  displayLog();
 };
 
-const displayLog = (hash: string, seen: Set<string> = new Set()) => {
+const displayLog = () => {
+  const hash = commitHashes.shift();
+  if (!hash) {
+    return;
+  }
+
   const dirName = hash.slice(0, 2);
   const fileName = hash.slice(2);
 
@@ -35,31 +46,40 @@ const displayLog = (hash: string, seen: Set<string> = new Set()) => {
     // commit info
     const commitInfoBinary = buf.slice(nullIndex + 1);
     const content = new TextDecoder().decode(commitInfoBinary);
+    console.log(content, "\n");
 
-    const parseResult = parseCommitLog(content, 0, new Map());
-    parseResult.forEach((values, key) => {
-      const valueString = values.reduce((a, b) => {
-        return a + "\n       " + b;
-      });
-
-      console.log(key, valueString);
-    });
-
-    console.log("\n");
-
-    const parentHashes = parseResult.get("parent");
-    if (parentHashes) {
-      parentHashes
-        .filter((parentHash) => {
-          return !seen.has(parentHash);
+    const parentCommitHashes = getParentCommitHashes(content);
+    if (parentCommitHashes.length >= 1) {
+      parentCommitHashes
+        .filter((commitHash) => {
+          return !seen.has(commitHash);
         })
-        .forEach((parentHash) => {
-          seen.add(parentHash);
-          displayLog(parentHash, seen);
+        .forEach((commitHash) => {
+          commitHashes.push(commitHash);
+          seen.add(commitHash);
         });
     }
+
+    displayLog();
   });
 };
+
+const getParentCommitHashes = (commitLog: string): string[] => {
+  const parentCommitHashes = [];
+  let index = commitLog.indexOf("parent ");
+
+  while (index !== -1) {
+    const space = commitLog.indexOf(" ", index);
+    const nlChar = commitLog.indexOf("\n", space);
+    parentCommitHashes.push(commitLog.slice(space + 1, nlChar));
+
+    index = commitLog.indexOf("parent ", nlChar);
+  }
+
+  return parentCommitHashes.reverse();
+};
+
+/*
 
 const parseCommitLog = (
   commitLog: string,
@@ -89,3 +109,5 @@ const parseCommitLog = (
 
   return parseCommitLog(commitLog, start, dict);
 };
+
+*/
