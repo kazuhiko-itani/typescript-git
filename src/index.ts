@@ -4,6 +4,7 @@ import type { CatFileOption } from "./catFile";
 import { catFile } from "./catFile";
 import { hashObject } from "./hashObject";
 import { init } from "./init";
+import { log } from "./log";
 
 type ShowTypeOption = {
   [k in CatFileOption]: boolean;
@@ -42,6 +43,13 @@ program
   .argument("<filePath>")
   .action((filePath) => {
     hashObject(filePath);
+  });
+
+program
+  .command("log")
+  .argument("<hash>")
+  .action((hash) => {
+    log(hash);
   });
 
 program.parse();
