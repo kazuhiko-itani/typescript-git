@@ -36,17 +36,14 @@ const displayLog = async () => {
   const commitLog = new TextDecoder().decode(gitObjectInfo.contentBinary);
   console.log(commitLog, "\n");
 
-  const parentCommitHashes = getParentCommitHashes(commitLog);
-  if (parentCommitHashes.length >= 1) {
-    parentCommitHashes
-      .filter((commitHash) => {
-        return !seen.has(commitHash);
-      })
-      .forEach((commitHash) => {
-        commitHashes.push(commitHash);
-        seen.add(commitHash);
-      });
-  }
+  getParentCommitHashes(commitLog)
+    .filter((commitHash) => {
+      return !seen.has(commitHash);
+    })
+    .forEach((commitHash) => {
+      commitHashes.push(commitHash);
+      seen.add(commitHash);
+    });
 
   displayLog();
 };

@@ -2,6 +2,7 @@ import { Command } from "commander";
 import dotenv from "dotenv";
 import type { CatFileOption } from "./catFile";
 import { catFile } from "./catFile";
+import { checkout } from "./checkout";
 import { hashObject } from "./hashObject";
 import { init } from "./init";
 import { log } from "./log";
@@ -59,6 +60,13 @@ program
   .argument("<hash>")
   .action((hash, options: { recursive: boolean }) => {
     lsTree(hash, options.recursive);
+  });
+
+program
+  .command("checkout")
+  .argument("<commitHash>")
+  .action((commitHash) => {
+    checkout(commitHash);
   });
 
 program.parse();
