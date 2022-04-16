@@ -1,28 +1,22 @@
-import { existsSync, readFileSync } from "fs";
-import { TextDecoder } from "util";
-import { parseGitObject } from "./helpers/parseGitObject";
-import { getGitObjectPath } from "./helpers/pathHelpers";
+import type { GitObjectType } from "./domain";
+import { decodeGitObjectFromHash } from "./helpers/parser";
 
 export type CatFileOption = "type" | "size" | "prettyPrint";
-export type FileType = "blob" | "tree" | "commit" | "tag";
 
 export const catFile = async (
   hash: string,
   option: CatFileOption
 ): Promise<void> => {
-  const gitObjectPath = getGitObjectPath(hash);
-  if (!existsSync(gitObjectPath)) {
-    throw Error(`${gitObjectPath} is not exist`);
-  }
+  const gitObject = await decodeGitObjectFromHash(hash);
 
-  const fileContent = readFileSync(gitObjectPath);
-  const gitObjectInfo = await parseGitObject(fileContent);
-  const content = new TextDecoder().decode(gitObjectInfo.contentBinary);
-
-  switch (gitObjectInfo.type) {
+  switch (gitObject.type) {
     case "blob": {
       showBlobDetail(
-        { type: gitObjectInfo.type, fileSize: gitObjectInfo.size, content },
+        {
+          type: gitObject.type,
+          fileSize: gitObject.size,
+          content: gitObject.content,
+        },
         option
       );
       break;
@@ -33,18 +27,15 @@ export const catFile = async (
     case "commit": {
       break;
     }
-    case "tag": {
-      break;
-    }
     default: {
-      const strangeType: never = gitObjectInfo.type;
-      console.log(`${strangeType} is not allowed type`);
+      const undefinedValue: never = gitObject;
+      console.log(`${undefinedValue} is invalid git object.`);
     }
   }
 };
 
 const showBlobDetail = (
-  data: { type: FileType; fileSize: number; content: string },
+  data: { type: GitObjectType; fileSize: number; content: string },
   showOption: CatFileOption
 ): void => {
   switch (showOption) {

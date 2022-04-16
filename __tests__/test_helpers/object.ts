@@ -1,13 +1,13 @@
 import { createHash } from "crypto";
 import { mkdirSync, writeFileSync } from "fs";
 import { gzip } from "zlib";
-import type { FileType } from "../../src/catFile";
+import type { GitObjectType } from "../../src/domain";
 import { getTestGitDirPath } from "./setupGitDir";
 
 // ヘルパー関数だけどこれはもうhash-fileコマンドを実装しているのと同じ...
 
 export const createBlobObject = (data: {
-  type: FileType;
+  type: GitObjectType;
   content: string;
 }): Promise<string> => {
   const blobData = data.type + " " + data.content.length + "\0" + data.content;

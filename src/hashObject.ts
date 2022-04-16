@@ -1,7 +1,7 @@
 import { createHash } from "crypto";
 import { existsSync, lstatSync, readFileSync } from "fs";
 import { join } from "path";
-import { getRepoPath } from "./helpers/pathHelpers";
+import { getRepoPath } from "./helpers/path";
 
 type HeaderType = "tree" | "blob";
 
