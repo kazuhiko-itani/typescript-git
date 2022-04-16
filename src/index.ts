@@ -7,6 +7,7 @@ import { hashObject } from "./hashObject";
 import { init } from "./init";
 import { log } from "./log";
 import { lsTree } from "./lsTree";
+import { showRef } from "./showRef";
 
 type ShowTypeOption = {
   [k in CatFileOption]: boolean;
@@ -68,5 +69,9 @@ program
   .action((commitHash) => {
     checkout(commitHash);
   });
+
+program.command("show-ref").action(() => {
+  showRef();
+});
 
 program.parse();

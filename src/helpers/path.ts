@@ -45,3 +45,7 @@ export const getCheckoutRepo = (): string => {
 
   return join(getRepoPath(), checkoutRepo);
 };
+
+export const getRefPath = (): string => {
+  return join(getGitPath(), "refs");
+};
