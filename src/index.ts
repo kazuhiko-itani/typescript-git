@@ -65,9 +65,9 @@ program
 
 program
   .command("checkout")
-  .argument("<commitHash>")
-  .action((commitHash) => {
-    checkout(commitHash);
+  .argument("<checkoutTo>")
+  .action((checkoutTo) => {
+    checkout(checkoutTo);
   });
 
 program.command("show-ref").action(() => {

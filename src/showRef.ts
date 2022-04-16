@@ -1,6 +1,7 @@
-import { existsSync, lstatSync, readdirSync, readFileSync } from "fs";
+import { existsSync, lstatSync, readdirSync } from "fs";
 import { join } from "path";
 import { getGitPath, getRefPath } from "./helpers/path";
+import { refResolve } from "./helpers/ref";
 
 export const showRef = (ref = ""): void => {
   showRefList(join(getRefPath(), ref));
@@ -18,21 +19,8 @@ const showRefList = (path: string) => {
     if (lstatSync(itemPath).isDirectory()) {
       showRefList(itemPath);
     } else {
-      refResolve(itemPath);
+      const hash = refResolve(itemPath);
+      console.log(hash, itemPath.replace(`${getGitPath()}/`, ""));
     }
-  }
-};
-
-const refResolve = (absolutePath: string) => {
-  if (!existsSync(absolutePath)) {
-    throw Error(`${absolutePath} is not exists.`);
-  }
-
-  const ref = readFileSync(absolutePath, "ascii").replace("\n", "");
-
-  if (ref.startsWith("ref: ")) {
-    refResolve(join(getGitPath(), ref.slice(5)));
-  } else {
-    console.log(ref, absolutePath.replace(`${getGitPath()}/`, ""));
   }
 };

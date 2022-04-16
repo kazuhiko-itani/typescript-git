@@ -1,36 +1,58 @@
-import { mkdirSync, readdirSync, writeFileSync } from "fs";
+import {
+  existsSync,
+  lstatSync,
+  mkdirSync,
+  readdirSync,
+  rmdirSync,
+  unlinkSync,
+  writeFileSync,
+} from "fs";
 import { join, resolve } from "path";
 import { BLOB_MODE, TREE_MODE } from "./domain";
 import { decodeGitObjectFromHash } from "./helpers/parser";
-import { getCheckoutRepo } from "./helpers/path";
+import { getCheckoutRepo, getGitPath, getRefPath } from "./helpers/path";
+import { refResolve } from "./helpers/ref";
 import {
   isBlobObject,
   isCommitObject,
   isTreeObject,
 } from "./helpers/typeChecker";
 
-export const checkout = async (commitHash: string): Promise<void> => {
-  // 安全面を考慮して、対象のディレクトリが空の場合にのみコードをチェックアウトする
-  if (readdirSync(getCheckoutRepo()).length !== 0) {
-    console.log("The target directory must be empty to perform the checkout.");
-    return;
+export const checkout = (checkoutTo: string): void => {
+  const path = join(getRefPath(), "heads", checkoutTo);
+
+  // if true, checkoutTo is branch name
+  // if false, checkoutTo is hash string
+  if (existsSync(path)) {
+    const commitHash = refResolve(path);
+    execCheckout(commitHash);
+    writeFileSync(join(getGitPath(), "HEAD"), `ref: refs/heads/${checkoutTo}`);
+  } else {
+    execCheckout(checkoutTo);
+    writeFileSync(join(getGitPath(), "HEAD"), checkoutTo);
   }
 
-  const gitObject = await decodeGitObjectFromHash(commitHash);
+  console.log(`done checkout ${checkoutTo}`);
+};
+
+const execCheckout = async (hash: string): Promise<void> => {
+  const gitObject = await decodeGitObjectFromHash(hash);
   if (!isCommitObject(gitObject)) {
-    throw new Error(`${commitHash} is not commit object.`);
+    throw new Error(`${hash} is not commit object.`);
   }
 
   const treeHash = gitObject.content.get("tree");
   if (!treeHash || treeHash.length === 0) {
-    throw Error(`${commitHash} is invalid commit data.`);
+    throw Error(`${hash} is invalid data.`);
   }
 
-  execCheckout(treeHash[0]);
-  console.log(`done checkout ${commitHash}`);
+  // チェックアウトの途中で失敗した場合、以前のコードベースを復旧できないが、
+  // 実装の単純化のために許容する。（復旧機能を実装するとしたら、変更前のHEADを記憶しておけば良い？）
+  cleanCheckoutRepo();
+  treeCheckout(treeHash[0]);
 };
 
-const execCheckout = async (treeHash: string, path = ".") => {
+const treeCheckout = async (treeHash: string, path = ".") => {
   const gitObject = await decodeGitObjectFromHash(treeHash);
   if (!isTreeObject(gitObject)) {
     throw new Error(`${treeHash} is not tree object.`);
@@ -39,7 +61,7 @@ const execCheckout = async (treeHash: string, path = ".") => {
   gitObject.content.forEach(async (data) => {
     if (data.mode === TREE_MODE) {
       mkdirSync(resolve(getCheckoutRepo(), path, data.path));
-      execCheckout(data.hash, join(path, data.path));
+      treeCheckout(data.hash, join(path, data.path));
     } else if (data.mode === BLOB_MODE) {
       const blobObjectData = await decodeGitObjectFromHash(data.hash);
 
@@ -55,4 +77,20 @@ const execCheckout = async (treeHash: string, path = ".") => {
       );
     }
   });
+};
+
+export const cleanCheckoutRepo = (path = getCheckoutRepo()): void => {
+  const items = readdirSync(path);
+  for (const item of items) {
+    const itemPath = join(path, item);
+    if (lstatSync(itemPath).isDirectory()) {
+      cleanCheckoutRepo(itemPath);
+    } else {
+      unlinkSync(itemPath);
+    }
+  }
+
+  if (path !== getCheckoutRepo()) {
+    rmdirSync(path);
+  }
 };
