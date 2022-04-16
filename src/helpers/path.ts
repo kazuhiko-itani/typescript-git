@@ -1,7 +1,7 @@
 import { existsSync } from "fs";
 import { join, resolve } from "path";
 
-export const getRepoPath = (currentPath = "."): string => {
+export const getRepoRootPath = (currentPath = "."): string => {
   const realPath = resolve(currentPath);
 
   if (existsSync(join(realPath, ".git"))) {
@@ -13,11 +13,11 @@ export const getRepoPath = (currentPath = "."): string => {
     throw Error("No git repo directory");
   }
 
-  return getRepoPath(parent);
+  return getRepoRootPath(parent);
 };
 
-export const getGitPath = (): string => {
-  const repoPath = getRepoPath();
+export const getGitRootPath = (): string => {
+  const repoPath = getRepoRootPath();
   const gitDirName = process.env.GIT_DIR_NAME;
   if (!gitDirName) {
     throw Error("GIT_DIR_NAME env is must set");
@@ -30,10 +30,10 @@ export const getGitObjectPath = (hash: string): string => {
   const dir = hash.slice(0, 2);
   const file = hash.slice(2);
 
-  return join(getGitPath(), "objects", dir, file);
+  return join(getGitRootPath(), "objects", dir, file);
 };
 
-export const getCheckoutRepo = (): string => {
+export const getCheckoutRepoRootPath = (): string => {
   const checkoutRepo = process.env.CHECKOUT_REPO_NAME;
   if (!checkoutRepo) {
     throw Error("CHECK_REPO_NAME env is must set");
@@ -43,9 +43,9 @@ export const getCheckoutRepo = (): string => {
     throw new Error(`${checkoutRepo} is not exist.`);
   }
 
-  return join(getRepoPath(), checkoutRepo);
+  return join(getRepoRootPath(), checkoutRepo);
 };
 
-export const getRefPath = (): string => {
-  return join(getGitPath(), "refs");
+export const getRefRootPath = (): string => {
+  return join(getGitRootPath(), "refs");
 };
