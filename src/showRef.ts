@@ -2,15 +2,11 @@ import { existsSync, lstatSync, readdirSync, readFileSync } from "fs";
 import { join } from "path";
 import { getGitPath, getRefPath } from "./helpers/path";
 
-export const showRef = (): void => {
-  showRefList();
+export const showRef = (ref = ""): void => {
+  showRefList(join(getRefPath(), ref));
 };
 
-const showRefList = (path = "") => {
-  if (!path) {
-    path = getRefPath();
-  }
-
+const showRefList = (path: string) => {
   if (!existsSync(path)) {
     throw Error(`${path} is not exists.`);
   }
