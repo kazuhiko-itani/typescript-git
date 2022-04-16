@@ -1,14 +1,14 @@
 import { resolve } from "path";
 import {
   getGitObjectPath,
-  getGitPath,
-  getRepoPath,
+  getGitRootPath,
+  getRepoRootPath,
 } from "../../src/helpers/path";
 
 test("should return the directory where git is located", () => {
   const expectPath = resolve(__dirname, "..", "..");
 
-  expect(getRepoPath()).toBe(expectPath);
+  expect(getRepoRootPath()).toBe(expectPath);
 });
 
 test("should return .tgit dir path", () => {
@@ -19,7 +19,7 @@ test("should return .tgit dir path", () => {
 
   const expectPath = resolve(__dirname, "..", "..", gitDirName);
 
-  expect(getGitPath()).toBe(expectPath);
+  expect(getGitRootPath()).toBe(expectPath);
 });
 
 test("should return git object path in .tgit dir", () => {

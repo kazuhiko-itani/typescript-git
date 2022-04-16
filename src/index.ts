@@ -1,5 +1,6 @@
 import { Command } from "commander";
 import dotenv from "dotenv";
+import { createBranch, showBranch } from "./branch";
 import type { CatFileOption } from "./catFile";
 import { catFile } from "./catFile";
 import { checkout } from "./checkout";
@@ -27,7 +28,7 @@ program
   .option("-s --size")
   .option("-p --prettyPrint")
   .argument("<hash>", "file path")
-  .action((hash, options: Partial<ShowTypeOption>) => {
+  .action((hash: string, options: Partial<ShowTypeOption>) => {
     if (Object.values(options).length == 0) {
       console.log("show type option must need.");
       return;
@@ -44,7 +45,7 @@ program
 program
   .command("hash-object")
   .argument("<filePath>")
-  .action((filePath) => {
+  .action((filePath: string) => {
     hashObject(filePath);
   });
 
@@ -59,14 +60,14 @@ program
   .command("ls-tree")
   .option("-r --recursive")
   .argument("<hash>")
-  .action((hash, options: { recursive: boolean }) => {
+  .action((hash: string, options: { recursive: boolean }) => {
     lsTree(hash, options.recursive);
   });
 
 program
   .command("checkout")
   .argument("<checkoutTo>")
-  .action((checkoutTo) => {
+  .action((checkoutTo: string) => {
     checkout(checkoutTo);
   });
 
@@ -79,7 +80,7 @@ program
   .option("-a --isCreateObject", "Whether to create a tag object")
   .argument("[name]", "The new tag's name")
   .argument("[object]", "The object the new tag will point to")
-  .action((name, object, options) => {
+  .action((name: string | undefined, object: string | undefined, options) => {
     if (!name) {
       showRef("tags");
       // TODO タグ作成処理の実装
@@ -87,6 +88,18 @@ program
       console.log(options);
     } else {
       console.log("ok");
+    }
+  });
+
+program
+  .command("branch")
+  .option("-b --switch", "Whether to switch branch")
+  .argument("[branchName]", "The new branch's name")
+  .action((branchName: string | undefined, options: { switch?: boolean }) => {
+    if (branchName) {
+      createBranch(branchName, options.switch ?? false);
+    } else {
+      showBranch();
     }
   });
 

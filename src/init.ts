@@ -1,10 +1,10 @@
 import ConfigParser from "configparser";
 import { existsSync, mkdirSync, writeFileSync } from "fs";
 import { join } from "path";
-import { getGitPath } from "./helpers/path";
+import { getGitRootPath } from "./helpers/path";
 
 export const init = (): void => {
-  const gitPath = getGitPath();
+  const gitPath = getGitRootPath();
   if (existsSync(gitPath)) {
     throw Error(`${gitPath} is already exist`);
   }

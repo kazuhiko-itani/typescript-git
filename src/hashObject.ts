@@ -1,12 +1,12 @@
 import { createHash } from "crypto";
 import { existsSync, lstatSync, readFileSync } from "fs";
 import { join } from "path";
-import { getRepoPath } from "./helpers/path";
+import { getRepoRootPath } from "./helpers/path";
 
 type HeaderType = "tree" | "blob";
 
 export const hashObject = (filePath: string): void => {
-  const absolutePath = join(getRepoPath(), filePath);
+  const absolutePath = join(getRepoRootPath(), filePath);
   if (!existsSync(absolutePath)) {
     throw Error(`${absolutePath} is not exist.`);
   }

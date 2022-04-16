@@ -10,7 +10,11 @@ import {
 import { join, resolve } from "path";
 import { BLOB_MODE, TREE_MODE } from "./domain";
 import { decodeGitObjectFromHash } from "./helpers/parser";
-import { getCheckoutRepo, getGitPath, getRefPath } from "./helpers/path";
+import {
+  getCheckoutRepoRootPath,
+  getGitRootPath,
+  getRefRootPath,
+} from "./helpers/path";
 import { refResolve } from "./helpers/ref";
 import {
   isBlobObject,
@@ -19,17 +23,20 @@ import {
 } from "./helpers/typeChecker";
 
 export const checkout = (checkoutTo: string): void => {
-  const path = join(getRefPath(), "heads", checkoutTo);
+  const path = join(getRefRootPath(), "heads", checkoutTo);
 
   // if true, checkoutTo is branch name
   // if false, checkoutTo is hash string
   if (existsSync(path)) {
     const commitHash = refResolve(path);
     execCheckout(commitHash);
-    writeFileSync(join(getGitPath(), "HEAD"), `ref: refs/heads/${checkoutTo}`);
+    writeFileSync(
+      join(getGitRootPath(), "HEAD"),
+      `ref: refs/heads/${checkoutTo}`
+    );
   } else {
     execCheckout(checkoutTo);
-    writeFileSync(join(getGitPath(), "HEAD"), checkoutTo);
+    writeFileSync(join(getGitRootPath(), "HEAD"), checkoutTo);
   }
 
   console.log(`done checkout ${checkoutTo}`);
@@ -60,7 +67,7 @@ const treeCheckout = async (treeHash: string, path = ".") => {
 
   gitObject.content.forEach(async (data) => {
     if (data.mode === TREE_MODE) {
-      mkdirSync(resolve(getCheckoutRepo(), path, data.path));
+      mkdirSync(resolve(getCheckoutRepoRootPath(), path, data.path));
       treeCheckout(data.hash, join(path, data.path));
     } else if (data.mode === BLOB_MODE) {
       const blobObjectData = await decodeGitObjectFromHash(data.hash);
@@ -72,14 +79,14 @@ const treeCheckout = async (treeHash: string, path = ".") => {
       }
 
       writeFileSync(
-        resolve(getCheckoutRepo(), path, data.path),
+        resolve(getCheckoutRepoRootPath(), path, data.path),
         blobObjectData.content
       );
     }
   });
 };
 
-export const cleanCheckoutRepo = (path = getCheckoutRepo()): void => {
+export const cleanCheckoutRepo = (path = getCheckoutRepoRootPath()): void => {
   const items = readdirSync(path);
   for (const item of items) {
     const itemPath = join(path, item);
@@ -90,7 +97,7 @@ export const cleanCheckoutRepo = (path = getCheckoutRepo()): void => {
     }
   }
 
-  if (path !== getCheckoutRepo()) {
+  if (path !== getCheckoutRepoRootPath()) {
     rmdirSync(path);
   }
 };

@@ -1,10 +1,10 @@
 import { existsSync, lstatSync, readdirSync } from "fs";
 import { join } from "path";
-import { getGitPath, getRefPath } from "./helpers/path";
+import { getGitRootPath, getRefRootPath } from "./helpers/path";
 import { refResolve } from "./helpers/ref";
 
 export const showRef = (ref = ""): void => {
-  showRefList(join(getRefPath(), ref));
+  showRefList(join(getRefRootPath(), ref));
 };
 
 const showRefList = (path: string) => {
@@ -20,7 +20,7 @@ const showRefList = (path: string) => {
       showRefList(itemPath);
     } else {
       const hash = refResolve(itemPath);
-      console.log(hash, itemPath.replace(`${getGitPath()}/`, ""));
+      console.log(hash, itemPath.replace(`${getGitRootPath()}/`, ""));
     }
   }
 };
