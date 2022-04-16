@@ -74,4 +74,20 @@ program.command("show-ref").action(() => {
   showRef();
 });
 
+program
+  .command("tag")
+  .option("-a --isCreateObject", "Whether to create a tag object")
+  .argument("[name]", "The new tag's name")
+  .argument("[object]", "The object the new tag will point to")
+  .action((name, object, options) => {
+    if (!name) {
+      showRef("tags");
+      // TODO タグ作成処理の実装
+    } else if (name && !object) {
+      console.log(options);
+    } else {
+      console.log("ok");
+    }
+  });
+
 program.parse();
