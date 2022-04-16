@@ -39,14 +39,15 @@
       }
     },
     "transform": {
-      "^.+\\.(ts|tsx)$": "ts-jest"
+      "^.+\\.ts$": "ts-jest"
     },
     "setupFiles": [
       "./setupFiles.ts"
     ],
     "testRegex": "/__tests__/.*\\.ts$",
     "modulePathIgnorePatterns": [
-      "/__tests__/test_helpers/*"
+      "/__tests__/test_helpers/*",
+      "/tgit_repo/*/"
     ],
     "moduleFileExtensions": [
       "ts",

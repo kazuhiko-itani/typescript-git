@@ -32,3 +32,16 @@ export const getGitObjectPath = (hash: string): string => {
 
   return join(getGitPath(), "objects", dir, file);
 };
+
+export const getCheckoutRepo = (): string => {
+  const checkoutRepo = process.env.CHECKOUT_REPO_NAME;
+  if (!checkoutRepo) {
+    throw Error("CHECK_REPO_NAME env is must set");
+  }
+
+  if (!existsSync(checkoutRepo)) {
+    throw new Error(`${checkoutRepo} is not exist.`);
+  }
+
+  return join(getRepoPath(), checkoutRepo);
+};

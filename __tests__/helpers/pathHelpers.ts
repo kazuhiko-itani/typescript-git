@@ -3,7 +3,7 @@ import {
   getGitObjectPath,
   getGitPath,
   getRepoPath,
-} from "../../src/helpers/pathHelpers";
+} from "../../src/helpers/path";
 
 test("should return the directory where git is located", () => {
   const expectPath = resolve(__dirname, "..", "..");
