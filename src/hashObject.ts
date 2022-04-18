@@ -1,6 +1,6 @@
-import { createHash } from "crypto";
-import { existsSync, lstatSync, readFileSync } from "fs";
+import { existsSync, lstatSync } from "fs";
 import { join } from "path";
+import { getBlobObjectSha } from "./helpers/blob";
 import { getRepoRootPath } from "./helpers/path";
 
 type HeaderType = "tree" | "blob";
@@ -17,18 +17,12 @@ export const hashObject = (filePath: string): void => {
 
   switch (type) {
     case "blob": {
-      createBlobObject(absolutePath);
+      const sha = getBlobObjectSha(absolutePath);
+      console.log(sha);
       break;
     }
     default: {
       console.log(type);
     }
   }
-};
-
-const createBlobObject = (filePath: string): void => {
-  const fileContent = readFileSync(filePath);
-  const blobData = "blob" + " " + fileContent.length + "\0" + fileContent;
-  const sha = createHash("sha1").update(blobData).digest("hex");
-  console.log(sha);
 };

@@ -9,7 +9,7 @@ export const lsTree = async (
 ): Promise<void> => {
   const gitObject = await decodeGitObjectFromHash(hash);
   if (!isTreeObject(gitObject)) {
-    throw new Error(`${hash} is not tree object.`);
+    throw Error(`${hash} is not tree object.`);
   }
 
   gitObject.content.forEach((data) => {

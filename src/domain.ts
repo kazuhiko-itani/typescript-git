@@ -39,3 +39,20 @@ export type TreeObject = {
   size: number;
   content: TreeParsedData[];
 };
+
+export type GitIndexEntryKey =
+  | "ctimeSecond"
+  | "ctimeNanosecond"
+  | "mtimeSecond"
+  | "mtimeNanosecond"
+  | "dev"
+  | "ino"
+  | "mode"
+  | "uid"
+  | "gid"
+  | "size"
+  | "sha"
+  | "filePathLength"
+  | "filePath";
+
+export type GitIndexEntryDict = Map<GitIndexEntryKey, string>;

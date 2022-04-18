@@ -1,5 +1,6 @@
 import { Command } from "commander";
 import dotenv from "dotenv";
+import { add } from "./add";
 import { createBranch, showBranch } from "./branch";
 import type { CatFileOption } from "./catFile";
 import { catFile } from "./catFile";
@@ -102,5 +103,9 @@ program
       showBranch();
     }
   });
+
+program.command("add").action(() => {
+  add();
+});
 
 program.parse();

@@ -45,7 +45,7 @@ export const checkout = (checkoutTo: string): void => {
 const execCheckout = async (hash: string): Promise<void> => {
   const gitObject = await decodeGitObjectFromHash(hash);
   if (!isCommitObject(gitObject)) {
-    throw new Error(`${hash} is not commit object.`);
+    throw Error(`${hash} is not commit object.`);
   }
 
   const treeHash = gitObject.content.get("tree");
@@ -62,7 +62,7 @@ const execCheckout = async (hash: string): Promise<void> => {
 const treeCheckout = async (treeHash: string, path = ".") => {
   const gitObject = await decodeGitObjectFromHash(treeHash);
   if (!isTreeObject(gitObject)) {
-    throw new Error(`${treeHash} is not tree object.`);
+    throw Error(`${treeHash} is not tree object.`);
   }
 
   gitObject.content.forEach(async (data) => {
@@ -73,7 +73,7 @@ const treeCheckout = async (treeHash: string, path = ".") => {
       const blobObjectData = await decodeGitObjectFromHash(data.hash);
 
       if (!isBlobObject(blobObjectData)) {
-        throw new Error(
+        throw Error(
           `${data.hash} is not blob object. ${treeHash} contain invalid data.`
         );
       }

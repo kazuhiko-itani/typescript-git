@@ -40,7 +40,7 @@ export const getCheckoutRepoRootPath = (): string => {
   }
 
   if (!existsSync(checkoutRepo)) {
-    throw new Error(`${checkoutRepo} is not exist.`);
+    throw Error(`${checkoutRepo} is not exist.`);
   }
 
   return join(getRepoRootPath(), checkoutRepo);

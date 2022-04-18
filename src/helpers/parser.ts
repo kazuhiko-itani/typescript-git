@@ -5,6 +5,7 @@ import type {
   CommitLogDict,
   CommitLogKey,
   CommitObject,
+  GitIndexEntryDict,
   GitObjectType,
   TreeObject,
   TreeParsedData,
@@ -104,10 +105,6 @@ const treeParseOne = (
   return { end: nullIndex + SHA_LENGTH, data: { mode, path, hash } };
 };
 
-export const parseCommitLog = (commitLog: string): CommitLogDict => {
-  return parseCommit(commitLog);
-};
-
 const parseCommit = (
   commitLog: string,
   start = 0,
@@ -135,4 +132,107 @@ const parseCommit = (
   }
 
   return parseCommit(commitLog, start, dict);
+};
+
+type IndexParser = {
+  header: {
+    signature: string;
+    version: string;
+    count: string;
+  };
+  entries: GitIndexEntryDict[];
+};
+
+export const indexParser = (buffer: Buffer): IndexParser => {
+  // header
+  const signature = new TextDecoder().decode(buffer.slice(0, 4));
+  const version = buffer.slice(4, 8).toString("hex");
+  const count = buffer.slice(8, 12).toString("hex");
+
+  // entries
+  let currentPos = 12;
+  const entries: GitIndexEntryDict[] = [];
+
+  for (let i = 0; i < parseInt(count, 16); i++) {
+    const entryStart = currentPos;
+    const dict: GitIndexEntryDict = new Map();
+
+    dict.set(
+      "ctimeSecond",
+      buffer.slice(currentPos, currentPos + 4).toString("hex")
+    );
+    currentPos += 4;
+
+    dict.set(
+      "ctimeNanosecond",
+      buffer.slice(currentPos, currentPos + 4).toString("hex")
+    );
+    currentPos += 4;
+
+    dict.set(
+      "mtimeSecond",
+      buffer.slice(currentPos, currentPos + 4).toString("hex")
+    );
+    currentPos += 4;
+
+    dict.set(
+      "mtimeNanosecond",
+      buffer.slice(currentPos, currentPos + 4).toString("hex")
+    );
+    currentPos += 4;
+
+    dict.set("dev", buffer.slice(currentPos, currentPos + 4).toString("hex"));
+    currentPos += 4;
+
+    dict.set("ino", buffer.slice(currentPos, currentPos + 4).toString("hex"));
+    currentPos += 4;
+
+    dict.set("mode", buffer.slice(currentPos, currentPos + 4).toString("hex"));
+    currentPos += 4;
+
+    dict.set("uid", buffer.slice(currentPos, currentPos + 4).toString("hex"));
+    currentPos += 4;
+
+    dict.set("gid", buffer.slice(currentPos, currentPos + 4).toString("hex"));
+    currentPos += 4;
+
+    dict.set("size", buffer.slice(currentPos, currentPos + 4).toString("hex"));
+    currentPos += 4;
+
+    dict.set("sha", buffer.slice(currentPos, currentPos + 20).toString("hex"));
+    currentPos += 20;
+
+    const filePathLength = buffer
+      .slice(currentPos, currentPos + 2)
+      .toString("hex");
+
+    dict.set("filePathLength", filePathLength);
+    currentPos += 2;
+
+    dict.set(
+      "filePath",
+      buffer
+        .slice(currentPos, currentPos + parseInt(filePathLength, 16))
+        .toString("ascii")
+    );
+    currentPos += parseInt(filePathLength, 16);
+    currentPos += calculatePadding(currentPos - entryStart);
+
+    entries.push(dict);
+  }
+
+  return {
+    header: {
+      signature,
+      version,
+      count,
+    },
+    entries,
+  };
+};
+
+// 1-8 nul bytes as necessary to pad the entry to a multiple of eight bytes while keeping the name NUL-terminated.
+const calculatePadding = (entrySize: number) => {
+  const diff = entrySize % 8;
+  return 8 - diff;
 };
