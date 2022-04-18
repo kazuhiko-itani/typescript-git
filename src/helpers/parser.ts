@@ -105,10 +105,6 @@ const treeParseOne = (
   return { end: nullIndex + SHA_LENGTH, data: { mode, path, hash } };
 };
 
-export const parseCommitLog = (commitLog: string): CommitLogDict => {
-  return parseCommit(commitLog);
-};
-
 const parseCommit = (
   commitLog: string,
   start = 0,

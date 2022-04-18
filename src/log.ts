@@ -20,7 +20,7 @@ const displayLog = async () => {
 
   const gitObject = await decodeGitObjectFromHash(hash);
   if (!isCommitObject(gitObject)) {
-    throw new Error(`${hash} is not commit object`);
+    throw Error(`${hash} is not commit object`);
   }
   displayData(hash, gitObject.content);
 
