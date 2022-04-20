@@ -1,26 +1,22 @@
 import { createHash } from "crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
-import { join } from "path";
 import { gzip } from "zlib";
-import { getGitRootPath } from "./path";
+import { getGitObjectDirNameFromHash, getGitObjectPathFromHash } from "./path";
 
 export const createBlobObject = (filePath: string): string => {
   const blobObjectData = getBlobObjectData(filePath);
+  const gitObjectPath = getGitObjectPathFromHash(blobObjectData.sha);
 
-  const dirName = blobObjectData.sha.slice(0, 2);
-  const fileName = blobObjectData.sha.slice(2);
-  const dirPath = join(getGitRootPath(), "objects", dirName);
-
-  if (existsSync(join(dirPath, fileName))) {
+  if (existsSync(gitObjectPath)) {
     return blobObjectData.sha;
   }
 
-  if (!existsSync(dirPath)) {
-    mkdirSync(dirPath);
+  if (!existsSync(getGitObjectDirNameFromHash(blobObjectData.sha))) {
+    mkdirSync(getGitObjectDirNameFromHash(blobObjectData.sha));
   }
 
   gzip(blobObjectData.data, (_, buf) => {
-    writeFileSync(join(dirPath, fileName), buf);
+    writeFileSync(gitObjectPath, buf);
   });
 
   return blobObjectData.sha;

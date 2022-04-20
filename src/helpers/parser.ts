@@ -11,12 +11,12 @@ import type {
   TreeParsedData,
 } from "../domain";
 import { SHA_LENGTH } from "../domain";
-import { getGitObjectPath } from "./path";
+import { getGitObjectPathFromHash } from "./path";
 
 export const decodeGitObjectFromHash = (
   hash: string
 ): Promise<BlobObject | CommitObject | TreeObject> => {
-  const objectPath = getGitObjectPath(hash);
+  const objectPath = getGitObjectPathFromHash(hash);
 
   if (!existsSync(objectPath)) {
     throw Error(`${hash} is not exist.`);
@@ -52,7 +52,7 @@ export const decodeGitObjectFromHash = (
           resolve({
             type,
             size,
-            content: parseCommit(new TextDecoder().decode(contentBinary)),
+            content: parseCommit(contentBinary),
           });
           break;
         }
@@ -105,7 +105,11 @@ const treeParseOne = (
   return { end: nullIndex + SHA_LENGTH, data: { mode, path, hash } };
 };
 
-const parseCommit = (
+const parseCommit = (content: Buffer) => {
+  return parseCommitLog(new TextDecoder().decode(content));
+};
+
+const parseCommitLog = (
   commitLog: string,
   start = 0,
   dict: CommitLogDict = new Map()
@@ -131,10 +135,10 @@ const parseCommit = (
     start = nlChar + 1;
   }
 
-  return parseCommit(commitLog, start, dict);
+  return parseCommitLog(commitLog, start, dict);
 };
 
-type IndexParser = {
+type GitIndex = {
   header: {
     signature: string;
     version: string;
@@ -143,7 +147,7 @@ type IndexParser = {
   entries: GitIndexEntryDict[];
 };
 
-export const indexParser = (buffer: Buffer): IndexParser => {
+export const indexParser = (buffer: Buffer): GitIndex => {
   // header
   const signature = new TextDecoder().decode(buffer.slice(0, 4));
   const version = buffer.slice(4, 8).toString("hex");
