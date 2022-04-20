@@ -2,6 +2,8 @@ export const SHA_LENGTH = 20;
 export const TREE_MODE = "40000";
 export const BLOB_MODE = "100644";
 
+export const GIT_DIR_NAME = ".git";
+
 export type TreeParsedData = {
   mode: string;
   path: string;

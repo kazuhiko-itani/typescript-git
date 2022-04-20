@@ -5,6 +5,7 @@ import { createBranch, showBranch } from "./branch";
 import type { CatFileOption } from "./catFile";
 import { catFile } from "./catFile";
 import { checkout } from "./checkout";
+import { commit } from "./commit";
 import { hashObject } from "./hashObject";
 import { init } from "./init";
 import { log } from "./log";
@@ -107,5 +108,12 @@ program
 program.command("add").action(() => {
   add();
 });
+
+program
+  .command("commit")
+  .argument("<message>")
+  .action((message: string) => {
+    commit(message);
+  });
 
 program.parse();

@@ -1,18 +1,15 @@
-import { lstatSync, readdirSync, readFileSync, writeFileSync } from "fs";
+import { lstatSync, readdirSync, writeFileSync } from "fs";
 import { join } from "path";
 import { GitIndexEntryDict } from "./domain";
 import { createBlobObject } from "./helpers/blob";
-import { indexParser } from "./helpers/parser";
-import { getGitRootPath, getRepoRootPath } from "./helpers/path";
+import { getCheckoutRepoRootPath, getGitRootPath } from "./helpers/path";
 
 const GIT_INDEX_SIGNATURE = "DIRC";
 const GIT_INDEX_VERSION = 2;
 
-// TODO .tgit_ignoreから読みこむようにする
+// TODO .git_ignoreから読みこむようにする
 const IGNORE_FILES_AND_DIRS = [
   ".git",
-  ".tgit",
-  "tgit_repo",
   "node_modules",
   "coverage",
   "yarn-error.log",
@@ -20,8 +17,6 @@ const IGNORE_FILES_AND_DIRS = [
 
 export const add = (): void => {
   const entries = createEntries();
-  const indexHeader = createHeader(entries.length);
-
   const entryBuffers: Buffer[] = [];
 
   entries.forEach((entry) => {
@@ -45,12 +40,11 @@ export const add = (): void => {
   });
 
   const indexBody = Buffer.concat([...entryBuffers]);
+  const indexHeader = createHeader(entries.length);
   const indexData = Buffer.concat([indexHeader, indexBody]);
 
   const indexFilePath = join(getGitRootPath(), "index");
   writeFileSync(indexFilePath, indexData);
-
-  console.log(indexParser(readFileSync(join(getGitRootPath(), "index"))));
 };
 
 const createHeader = (entryCount: number) => {
@@ -65,7 +59,7 @@ const createHeader = (entryCount: number) => {
 };
 
 const createEntries = (
-  path = getRepoRootPath(),
+  path = getCheckoutRepoRootPath(),
   entries: GitIndexEntryDict[] = []
 ) => {
   const items = readdirSync(path);
@@ -149,7 +143,7 @@ const createEntry = (filePath: string) => {
   const sha = createBlobObject(filePath);
   dict.set("sha", sha);
 
-  const filePathInRepo = filePath.replace(`${getRepoRootPath()}/`, "");
+  const filePathInRepo = filePath.replace(`${getCheckoutRepoRootPath()}/`, "");
 
   // filePathLength
   dict.set(
@@ -158,7 +152,7 @@ const createEntry = (filePath: string) => {
   );
 
   // filePath
-  dict.set("filePath", filePath.replace(`${getRepoRootPath()}/`, ""));
+  dict.set("filePath", filePath.replace(`${getCheckoutRepoRootPath()}/`, ""));
 
   return dict;
 };

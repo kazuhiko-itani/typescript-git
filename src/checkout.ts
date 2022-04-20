@@ -87,6 +87,10 @@ const treeCheckout = async (treeHash: string, path = ".") => {
 };
 
 export const cleanCheckoutRepo = (path = getCheckoutRepoRootPath()): void => {
+  if (path === getGitRootPath()) {
+    return;
+  }
+
   const items = readdirSync(path);
   for (const item of items) {
     const itemPath = join(path, item);

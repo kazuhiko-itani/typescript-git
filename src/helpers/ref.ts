@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from "fs";
+import { existsSync, readFileSync, writeFileSync } from "fs";
 import { join } from "path";
 import { getGitRootPath } from "./path";
 
@@ -14,4 +14,13 @@ export const refResolve = (absolutePath: string): string => {
   }
 
   return ref;
+};
+
+export const updateRef = (hash: string): void => {
+  // TODO when detached HEAD
+  const branchPath = readFileSync(join(getGitRootPath(), "HEAD"), "ascii")
+    .replace("ref: ", "")
+    .replace("\n", "");
+
+  writeFileSync(join(getGitRootPath(), ...branchPath.split("/")), hash);
 };

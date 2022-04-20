@@ -11,7 +11,6 @@ export const init = (): void => {
 
   mkdirSync(gitPath);
 
-  mkdirSync(join(gitPath, "branches"));
   mkdirSync(join(gitPath, "objects"));
   mkdirSync(join(gitPath, "refs", "tags"), { recursive: true });
   mkdirSync(join(gitPath, "refs", "heads"), { recursive: true });
@@ -23,6 +22,7 @@ export const init = (): void => {
 
   // .git/HEAD
   writeFileSync(join(gitPath, "HEAD"), "ref: refs/heads/master\n");
+  writeFileSync(join(gitPath, "refs", "heads", "master"), "");
 
   // .git/config
   const config = new ConfigParser();
